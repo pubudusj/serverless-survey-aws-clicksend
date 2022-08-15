@@ -1,0 +1,9 @@
+{
+    "name": "clicksend-create-contact",
+    "description": "create contact in Click Send",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "aws-sdk": "^2.799.0"
+    }
+}

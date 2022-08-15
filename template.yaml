@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  serverless-survey
+
+Parameters:
+  clickSendAuthKey:
+    Type: String
+  EventBusName:
+    Type: String
+    Default: EventBusABCCompany
+  EventSource:
+    Type: String
+    Default: ABCCo
+
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  eventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: !Ref EventBusName
+
+  sendMessageQueue:
+    Type: AWS::SQS::Queue
+
+  customerResponsesQueue:
+    Type: AWS::SQS::Queue
+
+  createUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/create-user/
+      Handler: create-user.index
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 15
+      Description: Save a new user to a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DdbTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt sendMessageQueue.QueueName
+      Environment:
+        Variables:
+          DDB_TABLE: !Ref DdbTable
+          SQS_QUEUE: !Ref sendMessageQueue
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: POST
+
+  sendSurveyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/send-survey/
+      Handler: send-survey.index
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 30
+      Description: Send a NPS survey to a customer using ClickSend.
+      Environment:
+        Variables:
+          DDB_TABLE: !Ref DdbTable
+          SQS_QUEUE: !Ref sendMessageQueue
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DdbTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt sendMessageQueue.QueueName
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /surveys
+            Method: POST
+
+  sendMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/send-message/
+      Handler: send-message.index
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 30
+      Description: Send a message using ClickSend.
+      Environment:
+        Variables:
+          DDB_TABLE: !Ref DdbTable
+          CLICKSEND_AUTHKEY: !Ref clickSendAuthKey
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref DdbTable
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt sendMessageQueue.Arn
+            BatchSize: 1
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
+
+  customerResponseReceivedFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/customer-response-received/
+      Handler: customer-response-received.index
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 30
+      Description: Receive a response from ClickSend as webhook.
+      Environment:
+        Variables:
+          SQS_QUEUE: !Ref customerResponsesQueue
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt customerResponsesQueue.QueueName
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: ["*"]
+
+  customerResponseProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/customer-response-process/
+      Handler: customer-response-process.index
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 30
+      Description: Process a response received from ClickSend.
+      Environment:
+        Variables:
+          DDB_TABLE: !Ref DdbTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DdbTable
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt customerResponsesQueue.Arn
+            BatchSize: 1
+
+  DdbTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: type
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: type
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  WebhookURLEndpoint:
+    Description: "Webhook url to receive customer response from ClickSend"
+    Value: !GetAtt customerResponseReceivedFunctionUrl.FunctionUrl
