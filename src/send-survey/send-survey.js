@@ -46,6 +46,7 @@ exports.index = async (event) => {
     Item: {
       pk: "survey_" + messgeId,
       type: "survey",
+      id: messgeId,
       message: message,
       userId: item.id,
       status: "pending",

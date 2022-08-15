@@ -53,6 +53,30 @@ Resources:
             Path: /users
             Method: POST
 
+  getSurveyResultsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/get-survey-results/
+      Handler: get-survey-results.index
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 30
+      Description: Get survery results
+      Environment:
+        Variables:
+          DDB_TABLE: !Ref DdbTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DdbTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /results
+            Method: GET
+
   sendSurveyFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -169,6 +193,23 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
+      GlobalSecondaryIndexes:
+        - IndexName: gsiType
+          KeySchema:
+            - AttributeName: type
+              KeyType: HASH
+          Projection: 
+            ProjectionType: INCLUDE
+            NonKeyAttributes: 
+              - pk
+              - id
+              - result
+              - status
+              - userId
+              - clickSendMessageId
+          ProvisionedThroughput:
+            ReadCapacityUnits: 2
+            WriteCapacityUnits: 2
 
 Outputs:
   WebEndpoint:
