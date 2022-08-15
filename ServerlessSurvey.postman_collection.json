@@ -1,0 +1,117 @@
+{
+	"info": {
+		"_postman_id": "162716a5-44ef-4ed8-8796-9d46f265632c",
+		"name": "ServerlessSurvey",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "create user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstName\":\"XXXXXX\",\n    \"lastName\":\"XXXXXX\",\n    \"phoneNumber\":\"+XXXXXXXXXX\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API}}/users",
+					"host": [
+						"{{API}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send survey",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\":\"XXXXXX\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API}}/surveys",
+					"host": [
+						"{{API}}"
+					],
+					"path": [
+						"surveys"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get survey results",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API}}/results",
+					"host": [
+						"{{API}}"
+					],
+					"path": [
+						"results"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "API",
+			"value": "https://api-gw-id.execute-api.eu-central-1.amazonaws.com/Prod",
+			"type": "default"
+		}
+	]
+}
