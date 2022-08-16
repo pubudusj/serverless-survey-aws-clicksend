@@ -5,12 +5,6 @@ Description: >-
 Parameters:
   clickSendAuthKey:
     Type: String
-  EventBusName:
-    Type: String
-    Default: EventBusABCCompany
-  EventSource:
-    Type: String
-    Default: ABCCo
 
 Transform: AWS::Serverless-2016-10-31
 
