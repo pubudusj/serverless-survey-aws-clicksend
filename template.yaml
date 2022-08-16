@@ -15,17 +15,17 @@ Resources:
   customerResponsesQueue:
     Type: AWS::SQS::Queue
 
-  createUserFunction:
+  createCustomerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/create-user/
-      Handler: create-user.index
+      CodeUri: src/create-customer/
+      Handler: create-customer.index
       Runtime: nodejs16.x
       Architectures:
         - x86_64
       MemorySize: 128
       Timeout: 15
-      Description: Save a new user to a DynamoDB table.
+      Description: Save a new customer to a DynamoDB table.
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DdbTable
@@ -39,7 +39,7 @@ Resources:
         Api:
           Type: Api
           Properties:
-            Path: /users
+            Path: /customers
             Method: POST
 
   getSurveyResultsFunction:
@@ -194,7 +194,7 @@ Resources:
               - id
               - result
               - status
-              - userId
+              - customerId
               - clickSendMessageId
           ProvisionedThroughput:
             ReadCapacityUnits: 2

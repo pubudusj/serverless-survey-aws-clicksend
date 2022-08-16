@@ -19,7 +19,7 @@ exports.index = async (event) => {
   const lastName = body.lastName;
   const phoneNumber = body.phoneNumber;
 
-  const userData = {
+  const customerData = {
     id: id,
     firstName: firstName,
     lastName: lastName,
@@ -29,8 +29,8 @@ exports.index = async (event) => {
   var params = {
     TableName: tableName,
     Item: {
-      pk: "user_" + id,
-      type: "user",
+      pk: "customer_" + id,
+      type: "customer",
       id: id,
       firstName: firstName,
       lastName: lastName,
@@ -50,7 +50,7 @@ exports.index = async (event) => {
       pk: "consent_" + id,
       type: "consent",
       message: message,
-      userId: id,
+      customerId: id,
       status: "pending",
     },
   };
@@ -72,6 +72,6 @@ exports.index = async (event) => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify(userData),
+    body: JSON.stringify(customerData),
   };
 };

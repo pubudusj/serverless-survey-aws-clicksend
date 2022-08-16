@@ -1,6 +1,6 @@
 {
-    "name": "create-user",
-    "description": "create user in database",
+    "name": "create-customer",
+    "description": "create customer in database",
     "version": "0.0.1",
     "private": true,
     "dependencies": {

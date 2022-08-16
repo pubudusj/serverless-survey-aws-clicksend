@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "create user",
+			"name": "create customer",
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -20,12 +20,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{API}}/users",
+					"raw": "{{API}}/customers",
 					"host": [
 						"{{API}}"
 					],
 					"path": [
-						"users"
+						"customers"
 					]
 				}
 			},
@@ -38,7 +38,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"userId\":\"XXXXXX\"\n}",
+					"raw": "{\n    \"customerId\":\"XXXXXX\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"

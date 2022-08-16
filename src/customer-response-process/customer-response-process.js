@@ -27,8 +27,8 @@ exports.index = async (data) => {
 
   switch (messageType) {
     case "consent":
-      // Update user consent
-      await updateUser(pk, messageId, messageContent);
+      // Update customer consent
+      await updateCustomer(pk, messageId, messageContent);
       break;
 
     case "survey":
@@ -41,7 +41,7 @@ exports.index = async (data) => {
   }
 };
 
-async function updateUser(pk, clickSendMessageId, messageContent) {
+async function updateCustomer(pk, clickSendMessageId, messageContent) {
   let consent = false;
 
   if (messageContent == "Y") {
@@ -52,7 +52,7 @@ async function updateUser(pk, clickSendMessageId, messageContent) {
 
   var params = {
     TableName: tableName,
-    Key: { pk: "user_" + ids[1], type: "user" },
+    Key: { pk: "customer_" + ids[1], type: "customer" },
     UpdateExpression:
       "set consent = :consent, clickSendMessageId = :clickSendMessageId",
     ExpressionAttributeValues: {

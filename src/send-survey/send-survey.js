@@ -14,21 +14,21 @@ exports.index = async (event) => {
   }
 
   const body = JSON.parse(event.body);
-  const userId = body.userId;
+  const customerId = body.customerId;
   const messgeId = uuidv4();
 
   var params = {
     TableName: tableName,
-    Key: { pk: "user_" + userId, type: "user" },
+    Key: { pk: "customer_" + customerId, type: "customer" },
   };
 
-  const user = await docClient.get(params).promise();
-  const item = user.Item;
+  const customer = await docClient.get(params).promise();
+  const item = customer.Item;
 
   if (!item) {
     return {
       statusCode: 422,
-      body: JSON.stringify({message: 'Customer not found with id ' + userId}),
+      body: JSON.stringify({message: 'Customer not found with id ' + customerId}),
     };
   }
 
@@ -48,7 +48,7 @@ exports.index = async (event) => {
       type: "survey",
       id: messgeId,
       message: message,
-      userId: item.id,
+      customerId: item.id,
       status: "pending",
     },
   };

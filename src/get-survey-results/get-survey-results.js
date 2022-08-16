@@ -23,7 +23,7 @@ exports.index = async (event) => {
       "#result": "result",
     },
     ProjectionExpression:
-      "pk, #id, userId, clickSendMessageId, #status, #result",
+      "pk, #id, customerId, clickSendMessageId, #status, #result",
     TableName: tableName,
   };
 
@@ -32,7 +32,7 @@ exports.index = async (event) => {
   data.Items.forEach((element) => {
     result.push({
       id: element.id,
-      userId: element.userId,
+      customerId: element.customerId,
       clickSendMessageId: element.clickSendMessageId,
       status: element.status,
       result: element.result ?? null,
