@@ -9,11 +9,6 @@ Parameters:
 Transform: AWS::Serverless-2016-10-31
 
 Resources:
-  eventBus: 
-    Type: AWS::Events::EventBus
-    Properties: 
-        Name: !Ref EventBusName
-
   sendMessageQueue:
     Type: AWS::SQS::Queue
 
