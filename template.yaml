@@ -201,9 +201,9 @@ Resources:
             WriteCapacityUnits: 2
 
 Outputs:
-  WebEndpoint:
+  ApiBaseUrl:
     Description: "API Gateway endpoint URL for Prod stage"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  WebhookURLEndpoint:
+  WebhookURL:
     Description: "Webhook url to receive customer response from ClickSend"
     Value: !GetAtt customerResponseReceivedFunctionUrl.FunctionUrl
