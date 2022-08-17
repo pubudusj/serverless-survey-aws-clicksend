@@ -1,7 +1,10 @@
 const AWS = require("aws-sdk");
 const docClient = new AWS.DynamoDB.DocumentClient();
+const { v4: uuidv4 } = require("uuid");
+const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
 const tableName = process.env.DDB_TABLE;
+const sqsQueue = process.env.SQS_QUEUE;
 
 exports.index = async (data) => {
   const event = JSON.parse(data["Records"][0].body);
@@ -33,12 +36,14 @@ exports.index = async (data) => {
   switch (messageType) {
     case "consent":
       // Update customer consent
-      await updateCustomer(pk, messageId, messageContent);
+      let customer = await updateCustomer(pk, messageId, messageContent);
+      await sendConsentSuccessMessage(customer.Attributes);
       break;
 
     case "survey":
       // Update survey result
-      await updateSurveyResult(pk, messageId, messageContent);
+      let survey = await updateSurveyResult(pk, messageId, messageContent);
+      await sendSurveyResponseSuccessMessage(survey.Attributes);
       break;
 
     default:
@@ -64,9 +69,41 @@ async function updateCustomer(pk, clickSendMessageId, messageContent) {
       ":consent": consent,
       ":clickSendMessageId": clickSendMessageId,
     },
+    ReturnValues: "ALL_NEW",
   };
 
-  await docClient.update(params).promise();
+  return await docClient.update(params).promise();
+}
+
+async function sendConsentSuccessMessage(customer) {
+  let id = uuidv4();
+  let message = "Thank you! You are now subscribed to surveys from XYZCo.";
+  var params = {
+    TableName: tableName,
+    Item: {
+      pk: "consentsuccess_" + id,
+      type: "consentsuccess",
+      id: id,
+      customerId: customer.id,
+      message: message,
+      status: "pending",
+    },
+  };
+
+  await docClient.put(params).promise();
+
+  const sqsMessage = {
+    MessageBody: JSON.stringify({
+      pk: "consentsuccess_" + id,
+      messageType: "consentsuccess",
+      phoneNumber: customer.phoneNumber,
+      message: message,
+    }),
+    QueueUrl: sqsQueue,
+  };
+
+  // Send to SQS
+  await sqs.sendMessage(sqsMessage).promise();
 }
 
 async function updateSurveyResult(pk, clickSendMessageId, messageContent) {
@@ -96,7 +133,44 @@ async function updateSurveyResult(pk, clickSendMessageId, messageContent) {
       "#status": "status",
       "#result": "result",
     },
+    ReturnValues: "ALL_NEW",
   };
 
-  await docClient.update(params).promise();
+  return await docClient.update(params).promise();
+}
+
+async function sendSurveyResponseSuccessMessage(survey) {
+  let message = "Thanks for rating our service. -XYZCo.";
+  if (survey.result < 5) {
+    message =
+      "Thanks for rating our service. We will contact you soon to learn more about your experience. -XYZCo.";
+  }
+
+  var params = {
+    TableName: tableName,
+    Item: {
+      pk: "ratingsuccess_" + survey.id,
+      type: "ratingsuccess",
+      id: survey.id,
+      customerId: survey.customerId,
+      phoneNumber: survey.phoneNumber,
+      message: message,
+      status: "pending",
+    },
+  };
+
+  await docClient.put(params).promise();
+
+  const sqsMessage = {
+    MessageBody: JSON.stringify({
+      pk: "ratingsuccess_" + survey.id,
+      messageType: "ratingsuccess",
+      phoneNumber: survey.phoneNumber,
+      message: message,
+    }),
+    QueueUrl: sqsQueue,
+  };
+
+  // Send to SQS
+  await sqs.sendMessage(sqsMessage).promise();
 }

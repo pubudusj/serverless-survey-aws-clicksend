@@ -141,6 +141,8 @@ Resources:
         AuthType: NONE
         Cors:
           AllowOrigins: ["*"]
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
 
   customerResponseProcessFunction:
     Type: AWS::Serverless::Function
@@ -156,15 +158,20 @@ Resources:
       Environment:
         Variables:
           DDB_TABLE: !Ref DdbTable
+          SQS_QUEUE: !Ref sendMessageQueue
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DdbTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt sendMessageQueue.QueueName
       Events:
         SQSEvent:
           Type: SQS
           Properties:
             Queue: !GetAtt customerResponsesQueue.Arn
             BatchSize: 1
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
 
   DdbTable:
     Type: AWS::DynamoDB::Table
@@ -204,6 +211,6 @@ Outputs:
   ApiBaseUrl:
     Description: "API Gateway endpoint URL for Prod stage"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  WebhookURL:
+  WebhookUrl:
     Description: "Webhook url to receive customer response from ClickSend"
     Value: !GetAtt customerResponseReceivedFunctionUrl.FunctionUrl

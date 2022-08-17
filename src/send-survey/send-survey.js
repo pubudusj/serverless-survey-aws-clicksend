@@ -49,6 +49,7 @@ exports.index = async (event) => {
       id: messgeId,
       message: message,
       customerId: item.id,
+      phoneNumber: item.phoneNumber,
       status: "pending",
     },
   };
