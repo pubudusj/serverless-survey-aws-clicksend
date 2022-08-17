@@ -5,23 +5,28 @@ const tableName = process.env.DDB_TABLE;
 
 exports.index = async (data) => {
   const event = JSON.parse(data["Records"][0].body);
-  const originalMessageId = event["data"]["original_message_id"];
-  const messageId = event["data"]["message_id"];
-  const messageContent = event["data"]["body"];
-  const customString = event["data"]["custom_string"].split(":");
-  const pk = customString[0];
-  const messageType = customString[1];
+  const originalMessageId = event["original_message_id"].trim();
+  const messageId = event["message_id"].trim();
+  const messageContent = event["body"].trim();
+  const pk = event["custom_string"].trim();
+  const customData = pk.split("_");
+  const messageType = customData[0];
 
-  var params = {
-    TableName: tableName,
-    Key: { pk: pk, type: messageType },
-  };
+  try {
+    var params = {
+      TableName: tableName,
+      Key: { pk: pk, type: messageType },
+    };
 
-  const result = await docClient.get(params).promise();
-  const message = result.Item;
+    const result = await docClient.get(params).promise();
+    const message = result.Item;
 
-  if (!message) {
-    console.log("Original message not found: " + originalMessageId);
+    if (!message) {
+      console.log("Original message not found: " + originalMessageId);
+      return;
+    }
+  } catch (error) {
+    console.log(error);
     return;
   }
 

@@ -18,7 +18,7 @@ exports.index = async (event) => {
           {
             body: body.message,
             to: body.phoneNumber,
-            custom_string: id + ":" + messageType,
+            custom_string: id,
           },
         ],
       },
