@@ -43,7 +43,7 @@ exports.index = async (event) => {
 
   // Create a entry for sending message
   const message =
-    "Please reply this message with Y if you wish to receive surveys from XYZCo.";
+    "Please reply to this message with Y if you wish to receive surveys from XYZCo.";
   var dbData = {
     TableName: tableName,
     Item: {

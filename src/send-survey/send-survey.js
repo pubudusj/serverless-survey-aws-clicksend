@@ -40,7 +40,7 @@ exports.index = async (event) => {
   }
 
   // Create a entry for sending message
-  const message = 'Thanks for using our service. Please rate our service by replying this message with a rating 1-10. (1 is poor and 10 is the best). -XYZCo.';
+  const message = 'Thanks for using our service. Please rate our service by replying to this message with a rating 1-10. (1 is poor and 10 is the best). -XYZCo.';
   var dbData = {
     TableName: tableName,
     Item: {
